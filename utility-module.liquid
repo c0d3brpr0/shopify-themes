@@ -1,0 +1,266 @@
+{% if request.design_mode %}
+  {% assign user_license = settings.license_key | strip %}
+
+  <div id="utility-dialog" style="display:none;">
+    <div class="dialog-overlay"></div>
+    <div class="dialog-content">
+      <h1>STATUS DO TEMA:</h1>
+      <h2 id="status-message"></h2>
+      <p id="details-message"></p>
+      <p id="theme-update-text"></p>
+      <button id="acquire-license-btn" onclick="acquireLicense()" disabled>ADQUIRIR LICENÇA</button>
+      <div id="terms-checkbox">
+        <input type="checkbox" id="terms-agreement" onchange="toggleAcquireButton()">
+        <label for="terms-agreement">Concordo com os <a href="https://termosdeusoeisencao.carrd.co/" target="_blank">termos e condições</a>.</label>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap');
+
+    #utility-dialog .dialog-overlay {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      background: rgba(0, 0, 0, 0.05) !important;
+      backdrop-filter: blur(8px) !important;
+      z-index: 9998 !important;
+    }
+    #utility-dialog .dialog-content {
+      font-family: 'Montserrat', sans-serif !important;
+      position: fixed !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      background: #ffffff !important;
+      padding: 40px !important;
+      border-radius: 20px !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+      z-index: 9999 !important;
+      max-width: 450px !important;
+      width: 90% !important;
+      text-align: center !important;
+    }
+    #utility-dialog h1 {
+      font-size: 28px !important;
+      font-weight: 600 !important;
+      text-transform: uppercase !important;
+      margin-bottom: 25px !important;
+      color: #000000 !important;
+      letter-spacing: 1px !important;
+    }
+    #utility-dialog h2 {
+      font-size: 22px !important;
+      font-weight: 400 !important;
+      margin-bottom: 20px !important;
+      color: #3498db !important;
+    }
+    #utility-dialog p {
+      margin-bottom: 20px !important;
+      color: #555555 !important;
+      font-size: 16px !important;
+      line-height: 1.6 !important;
+    }
+    #utility-dialog button {
+      background-color: #3498db !important;
+      color: #ffffff !important;
+      border: none !important;
+      padding: 12px 25px !important;
+      font-size: 16px !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      border-radius: 30px !important;
+      transition: all 0.3s ease !important;
+      text-transform: uppercase !important;
+      letter-spacing: 1px !important;
+    }
+    #utility-dialog button:hover {
+      background-color: #2980b9 !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3) !important;
+    }
+    #utility-dialog button:disabled {
+      background-color: #cccccc !important;
+      cursor: not-allowed !important;
+    }
+    #theme-update-text {
+      font-size: 12px !important;
+      color: #282c34 !important;
+      margin-top: 20px !important;
+      font-style: italic !important;
+      font-weight: 400 !important;
+    }
+    #details-message.license-unavailable {
+      font-weight: 400 !important;
+      color: red !important;
+      font-size: 28px !important;
+    }
+    #terms-checkbox {
+      margin-top: 15px !important;
+      margin-bottom: 15px !important;
+      text-align: center !important;
+    }
+    #terms-checkbox label {
+      font-size: 12px !important;
+      color: #555555 !important;
+    }
+    #terms-checkbox a {
+      color: #3498db !important;
+      text-decoration: none !important;
+    }
+    #terms-checkbox a:hover {
+      text-decoration: underline !important;
+    }
+    #theme-version {
+      font-size: 12px !important;
+      color: #888888 !important;
+      margin-top: 20px !important;
+      font-weight: 300 !important;
+    }
+  </style>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+  <script data-module-main>
+    var firebaseConfig = {
+      databaseURL: "https://temas-shopify-default-rtdb.firebaseio.com/"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var dialog = document.getElementById('utility-dialog');
+      var statusMessage = document.getElementById('status-message');
+      var detailsMessage = document.getElementById('details-message');
+      var themeUpdateText = document.getElementById('theme-update-text');
+      var themeVersion = document.getElementById('theme-version');
+      var userLicense = "{{ user_license }}";
+      var shopDomain = "{{ shop.permanent_domain }}";
+      var storageKey = 'systemActivated_' + shopDomain;
+      var termsCheckbox = document.getElementById('terms-agreement');
+      var acquireLicenseBtn = document.getElementById('acquire-license-btn');
+
+      function getCurrentThemeName() {
+        if (Shopify && Shopify.theme) {
+          return Shopify.theme.name;
+        }
+        return "Tema não identificado";
+      }
+
+      var currentThemeName = getCurrentThemeName();
+
+      function checkAndUpdateLicense(license, domain, theme, callback) {
+        var database = firebase.database();
+        var licenseRef = database.ref('licenses/' + license);
+        
+        licenseRef.once('value').then(function(snapshot) {
+          var licenseData = snapshot.val();
+          if (!licenseData) {
+            callback(false, "Licença não encontrada", null);
+            return;
+          }
+
+          if (licenseData.domain && licenseData.domain !== domain) {
+            callback(false, "Licença em uso em outro domínio", null);
+            return;
+          }
+
+          if (licenseData.status === "DISPONÍVEL" || licenseData.domain === domain) {
+            licenseRef.update({
+              domain: domain,
+              activatedAt: new Date().toISOString(),
+              status: "ONLINE",
+              theme: theme
+            }).then(function() {
+              callback(true, "Licença ativada com sucesso", theme);
+            }).catch(function(error) {
+              callback(false, "Erro ao atualizar licença", null);
+            });
+          } else {
+            callback(false, "Licença indisponível", null);
+          }
+        }).catch(function(error) {
+          callback(false, "Erro ao verificar licença", null);
+        });
+      }
+
+      function showDialog() {
+        dialog.style.display = 'block';
+      }
+
+      function updateThemeUpdateText() {
+        const now = new Date();
+        const months = [
+          'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+          'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+        ];
+        const currentMonth = months[now.getMonth()];
+        const currentYear = now.getFullYear();
+        
+        themeUpdateText.textContent = `Última atualização em ${currentMonth} de ${currentYear}`;
+      }
+
+      function acquireLicense() {
+        window.open('https://protemasbrasil.carrd.co/', '_blank');
+      }
+
+      termsCheckbox.addEventListener('change', function() {
+        acquireLicenseBtn.disabled = !this.checked;
+      });
+
+      checkAndUpdateLicense(userLicense, shopDomain, currentThemeName, function(isValid, message, theme) {
+        if (isValid) {
+          statusMessage.textContent = "STATUS DO TEMA:";
+          statusMessage.style.color = "green";
+          detailsMessage.textContent = message;
+          localStorage.setItem(storageKey, 'true');
+        } else {
+          statusMessage.textContent = "Adicione uma Licença Válida para Ativar os Recursos Premium.";
+          statusMessage.style.color = "red";
+          detailsMessage.textContent = message;
+          detailsMessage.classList.add('license-unavailable');
+          showDialog();
+        }
+        updateThemeUpdateText();
+      });
+
+      // Atualizar status periodicamente
+      setInterval(function() {
+        if (userLicense) {
+          var updatedThemeName = getCurrentThemeName();
+          var licenseRef = firebase.database().ref('licenses/' + userLicense);
+          licenseRef.update({
+            status: "ONLINE",
+            theme: updatedThemeName
+          });
+        }
+      }, 300000); // A cada 5 minutos
+
+      // Atualizar a data a cada minuto
+      setInterval(updateThemeUpdateText, 60000);
+    });
+  </script>
+
+  <script>
+    function toggleAcquireButton() {
+      var checkbox = document.getElementById('terms-agreement');
+      var button = document.getElementById('acquire-license-btn');
+      button.disabled = !checkbox.checked;
+    }
+
+    function acquireLicense() {
+      window.open('https://protemasbrasil.carrd.co/', '_blank');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var checkbox = document.getElementById('terms-agreement');
+      var button = document.getElementById('acquire-license-btn');
+      checkbox.checked = false;
+      button.disabled = true;
+    });
+  </script>
+{% endif %}
