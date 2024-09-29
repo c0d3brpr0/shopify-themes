@@ -8,7 +8,7 @@ function initUtilityModule(userLicense, shopDomain) {
         <h2 id="status-message"></h2>
         <p id="details-message"></p>
         <p id="theme-update-text"></p>
-        <button id="acquire-license-btn" onclick="acquireLicense()" disabled>STATUS DO TEMA:</button>
+        <button id="acquire-license-btn" onclick="acquireLicense()" disabled>ADQUIRIR LICENÇA</button>
         <div id="terms-checkbox">
           <input type="checkbox" id="terms-agreement" onchange="toggleAcquireButton()">
           <label for="terms-agreement">Concordo com os <a href="https://termosdeusoeisencao.carrd.co/" target="_blank">termos e condições</a>.</label>
@@ -47,7 +47,13 @@ function initUtilityModule(userLicense, shopDomain) {
     // Simulating API call to check license
     setTimeout(() => {
       if (license && domain) {
-        callback(true, "Licença ativada com sucesso");
+        if (license === "DEMO_LICENSE") {
+          callback(false, "Licença em uso em outro domínio");
+        } else if (license === "VALID_LICENSE") {
+          callback(true, "Licença ativada com sucesso");
+        } else {
+          callback(false, "Licença inválida ou não encontrada");
+        }
       } else {
         callback(false, "Licença inválida ou não encontrada");
       }
@@ -78,4 +84,7 @@ function initUtilityModule(userLicense, shopDomain) {
     checkbox.checked = false;
     button.disabled = true;
   });
+
+  // Certifique-se de que o botão de adquirir licença está funcionando
+  document.getElementById('acquire-license-btn').onclick = acquireLicense;
 }
