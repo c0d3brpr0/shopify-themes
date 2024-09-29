@@ -8,9 +8,9 @@ function initUtilityModule(userLicense, shopDomain) {
         <h2 id="status-message"></h2>
         <p id="details-message"></p>
         <p id="theme-update-text"></p>
-        <button id="acquire-license-btn" onclick="acquireLicense()" disabled>ADQUIRIR LICENÇA</button>
+        <button id="acquire-license-btn" disabled>ADQUIRIR LICENÇA</button>
         <div id="terms-checkbox">
-          <input type="checkbox" id="terms-agreement" onchange="toggleAcquireButton()">
+          <input type="checkbox" id="terms-agreement">
           <label for="terms-agreement">Concordo com os <a href="https://termosdeusoeisencao.carrd.co/" target="_blank">termos e condições</a>.</label>
         </div>
       </div>
@@ -78,13 +78,10 @@ function initUtilityModule(userLicense, shopDomain) {
     updateThemeUpdateText();
   });
 
-  document.addEventListener('DOMContentLoaded', function() {
-    var checkbox = document.getElementById('terms-agreement');
-    var button = document.getElementById('acquire-license-btn');
-    checkbox.checked = false;
-    button.disabled = true;
-  });
+  // Adicione os event listeners após a criação dos elementos
+  document.getElementById('terms-agreement').addEventListener('change', toggleAcquireButton);
+  document.getElementById('acquire-license-btn').addEventListener('click', acquireLicense);
 
-  // Certifique-se de que o botão de adquirir licença está funcionando
-  document.getElementById('acquire-license-btn').onclick = acquireLicense;
+  // Inicialize o estado do botão
+  toggleAcquireButton();
 }
