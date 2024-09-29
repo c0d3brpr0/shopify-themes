@@ -8,7 +8,7 @@ function initUtilityModule(userLicense, shopDomain) {
         <h2 id="status-message"></h2>
         <p id="details-message"></p>
         <p id="theme-update-text"></p>
-        <button id="acquire-license-btn" onclick="acquireLicense()" disabled>ADQUIRIR LICENÇA</button>
+        <button id="acquire-license-btn" onclick="acquireLicense()" disabled>PICA DURA:</button>
         <div id="terms-checkbox">
           <input type="checkbox" id="terms-agreement" onchange="toggleAcquireButton()">
           <label for="terms-agreement">Concordo com os <a href="https://termosdeusoeisencao.carrd.co/" target="_blank">termos e condições</a>.</label>
