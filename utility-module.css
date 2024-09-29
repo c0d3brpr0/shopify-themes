@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap');
+
+#utility-dialog .dialog-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+  backdrop-filter: blur(8px) !important;
+  z-index: 9998 !important;
+}
+
+#utility-dialog .dialog-content {
+  font-family: 'Montserrat', sans-serif !important;
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  background: #ffffff !important;
+  padding: 40px !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+  z-index: 9999 !important;
+  max-width: 450px !important;
+  width: 90% !important;
+  text-align: center !important;
+}
+
+#utility-dialog h1 {
+  font-size: 28px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  margin-bottom: 25px !important;
+  color: #000000 !important;
+  letter-spacing: 1px !important;
+}
+
+#utility-dialog h2 {
+  font-size: 22px !important;
+  font-weight: 400 !important;
+  margin-bottom: 20px !important;
+  color: #3498db !important;
+}
+
+#utility-dialog p {
+  margin-bottom: 20px !important;
+  color: #555555 !important;
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+}
+
+#utility-dialog button {
+  background-color: #3498db !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 12px 25px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  border-radius: 30px !important;
+  transition: all 0.3s ease !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+}
+
+#utility-dialog button:hover {
+  background-color: #2980b9 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3) !important;
+}
+
+#utility-dialog button:disabled {
+  background-color: #cccccc !important;
+  cursor: not-allowed !important;
+}
+
+#theme-update-text {
+  font-size: 12px !important;
+  color: #282c34 !important;
+  margin-top: 20px !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
+}
+
+#details-message.license-unavailable {
+  font-weight: 400 !important;
+  color: red !important;
+  font-size: 28px !important;
+}
+
+#terms-checkbox {
+  margin-top: 15px !important;
+  margin-bottom: 15px !important;
+  text-align: center !important;
+}
+
+#terms-checkbox label {
+  font-size: 12px !important;
+  color: #555555 !important;
+}
+
+#terms-checkbox a {
+  color: #3498db !important;
+  text-decoration: none !important;
+}
+
+#terms-checkbox a:hover {
+  text-decoration: underline !important;
+}
